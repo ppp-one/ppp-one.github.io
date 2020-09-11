@@ -58,7 +58,8 @@
         }
 
         .map-overlay label {
-            font-size: 14px;;
+            font-size: 14px;
+            ;
         }
 
         .map-overlay input {
@@ -98,11 +99,9 @@
                 return d
             });
 
-            $("#start").click()
-
-            $( document ).ready(function() {
-                $("#start").click();
-});
+        //             $( document ).ready(function() {
+        //                 $("#start").click();
+        // });
 
         document
             .getElementById('slider')
@@ -114,24 +113,26 @@
                 render();
             });
 
-            var myTimer;
-            d3.select("#start").on("click", function() {
-                clearInterval (myTimer);
-                myTimer = setInterval (function() {
-                var b= d3.select("#slider");
+        var myTimer;
+        d3.select("#start").on("click", function () {
+            clearInterval(myTimer);
+            myTimer = setInterval(function () {
+                var b = d3.select("#slider");
                 var t = (+b.property("value") + 1) % (+b.property("max") + 1);
-                if (t == 0) { t = +b.property("min"); }
+                if (t == 0) {
+                    t = +b.property("min");
+                }
                 b.property("value", t);
                 date.then(function (d) {
                     return $("#date").html(d[t].substring(0, 10));
                 })
                 render();
-                }, 25);
-            });
+            }, 25);
+        });
 
-            d3.select("#stop").on("click", function() {
-                clearInterval (myTimer);
-            });
+        d3.select("#stop").on("click", function () {
+            clearInterval(myTimer);
+        });
 
         mapboxgl.accessToken = "pk.eyJ1IjoicHBwMjUiLCJhIjoiY2tiMHh1dTA1MGNrMDJ2czlsdzltaXFueSJ9.zECHfP2jwsAjO_qNvRSVcg";
 
