@@ -89,13 +89,13 @@
     <script>
         const date = d3
             .json(
-                "./datetime.json",
+                "https://open-seneca.org/ppp25/covid/datetime.json",
                 function (d) {
                     return d;
-
                 }
             ).then(function (d) {
                 $("#date").html(d[0].substring(0, 10));
+                $("#slider").attr({'max': d.length - 1});
                 return d
             });
 
@@ -141,7 +141,7 @@
 
         const data = d3
             .json(
-                "./data.json",
+                "https://open-seneca.org/ppp25/covid/data.json",
                 function (d) {
                     return d;
                 }
