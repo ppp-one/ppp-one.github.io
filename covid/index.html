@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Estimated active cases</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        .map-overlay {
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 25%;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            z-index: 2;
+        }
+
+        .map-overlay .map-overlay-inner {
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .map-overlay h2 {
+            line-height: 24px;
+            display: block;
+            margin: 0 0 0px;
+        }
+
+        .map-overlay p {
+            line-height: 24px;
+            display: block;
+            margin: 0 0 10px;
+        }
+
+        .map-overlay label {
+            font-size: 14px;;
+        }
+
+        .map-overlay input {
+            background-color: transparent;
+            display: inline-block;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            cursor: ew-resize;
+        }
+    </style>
+    <div id="map"></div>
+    <div class="map-overlay top">
+        <div class="map-overlay-inner">
+            <h2>Estimated active cases</h2>
+            <p>(tested positive in the last 4 weeks)</p>
+            <!-- <hr /> -->
+            <label id="date"></label>
+            <input id="slider" type="range" min="0" max="222" step="1" value="0" />
+            <button type="button" id="start">start</button>
+            <button type="button" id="stop">stop</button>
+        </div>
+    </div>
+
+
+    <script>
+        const date = d3
+            .json(
+                "./datetime.json",
+                function (d) {
+                    return d;
+
+                }
+            ).then(function (d) {
+                $("#date").html(d[0].substring(0, 10));
+                return d
+            });
+
+        document
+            .getElementById('slider')
+            .addEventListener('input', function (e) {
+                i = e.target.value;
+                date.then(function (d) {
+                    return $("#date").html(d[i].substring(0, 10));
+                })
+                render();
+            });
+
+            var myTimer;
+            d3.select("#start").on("click", function() {
+                clearInterval (myTimer);
+                myTimer = setInterval (function() {
+                var b= d3.select("#slider");
+                var t = (+b.property("value") + 1) % (+b.property("max") + 1);
+                if (t == 0) { t = +b.property("min"); }
+                b.property("value", t);
+                date.then(function (d) {
+                    return $("#date").html(d[t].substring(0, 10));
+                })
+                render();
+                }, 25);
+            });
+
+            d3.select("#stop").on("click", function() {
+                clearInterval (myTimer);
+            });
+
+        mapboxgl.accessToken = "pk.eyJ1IjoicHBwMjUiLCJhIjoiY2tiMHh1dTA1MGNrMDJ2czlsdzltaXFueSJ9.zECHfP2jwsAjO_qNvRSVcg";
+
+        var map;
+        // var i = 0;
+
+        const data = d3
+            .json(
+                "./data.json",
+                function (d) {
+                    return d;
+                }
+            )
+            .then(createMap)
+            .then(createDots);
+
+        function createMap(data) {
+            map = new mapboxgl.Map({
+                container: "map", // container id
+                style: "mapbox://styles/mapbox/light-v9", // stylesheet location
+                zoom: 6, // starting zoom
+                center: [-1, 53.2],
+            });
+
+            map.on("viewreset", render);
+            map.on("move", render);
+            map.on("moveend", render);
+
+            // Optional: Modify map with d3
+            d3.selectAll(".mapboxgl-canvas")
+                .style("opacity", 1)
+                .style("position", "absolute")
+                .style("z-index", 1);
+            return data;
+        }
+
+        function createDots(data) {
+            var container = map.getCanvasContainer();
+
+            var svg = d3
+                .select(container)
+                .append("svg")
+                .attr("width", "100%")
+                .attr("height", "2000")
+                // Ensure d3 layer in front of map
+                .style("position", "absolute")
+                .style("z-index", 10);
+
+            let dots = svg
+                .selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class", "circle")
+                .style("opacity", 0.7)
+                .style("fill", "#ff3636");
+
+            render();
+        }
+
+        // Projection method:
+        // Project geojson coordinate to the map's current state
+        function project(d) {
+            return map.project(new mapboxgl.LngLat(d[0], d[1]));
+        }
+
+        // Render method redraws lines
+        function render() {
+
+            i = document.getElementById('slider').value;
+
+            d3.selectAll(".circle")
+                .attr("cx", function (d) {
+                    return project([d.lng, d.lat]).x;
+                })
+                .attr("cy", function (d) {
+                    return project([d.lng, d.lat]).y;
+                })
+                .attr("r", function (d) {
+                    return d.data[i] / 10;
+                });
+        }
+    </script>
+</body>
+
+</html>
