@@ -8,7 +8,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/metrics-graphics/2.15.6/metricsgraphics.min.js" integrity="sha512-ajcrSc3e0yOZ8tbLioR0G0rrcMvXoJku+UZfOXq2gtwbNLJGhbuzyxo/mAlxHfTegrN51YGvZXT/Gxp7NsIXXw==" crossorigin="anonymous"></script>
+
     <link href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/metrics-graphics/2.15.6/metricsgraphics.min.css" integrity="sha512-e5dJblUsk+67Y38sR7+4reR7UyT7BuT/8y0r4ZcXh59IGjAMY4UA81lHouD+a82FU9sGvAsLZlDLgAiUFeKXPg==" crossorigin="anonymous" />
+
     <style>
         body {
             margin: 0;
@@ -38,7 +42,7 @@
         }
 
         .map-overlay .map-overlay-inner {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9);
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             border-radius: 3px;
             padding: 10px;
@@ -70,6 +74,43 @@
             margin: 0;
             cursor: ew-resize;
         }
+
+        @media (max-width : 720px) {
+            .map-overlay {
+                width: 90%;
+            }
+        }
+
+        #play-button {
+            background-color: #696969;
+            padding-right: 26px;
+            border-radius: 3px;
+            border: none;
+            color: white;
+            margin: 0;
+            padding: 0 12px;
+            width: 60px;
+            cursor: pointer;
+            height: 30px;
+        }
+
+        #play-button:hover {
+            background-color: #2c2c2c;
+        }
+
+        .close-icon {
+            display: block;
+            box-sizing: border-box;
+            width: 20px;
+            height: 20px;
+            border-width: 3px;
+            border-style: solid;
+            border-color: #696969;
+            border-radius: 100%;
+            background: -webkit-linear-gradient(-45deg, transparent 0%, transparent 46%, white 46%, white 56%, transparent 56%, transparent 100%), -webkit-linear-gradient(45deg, transparent 0%, transparent 46%, white 46%, white 56%, transparent 56%, transparent 100%);
+            background-color: #696969;
+            transition: all 0.3s ease;
+        }
     </style>
     <div id="map"></div>
     <div class="map-overlay top">
@@ -79,9 +120,11 @@
             <p>This is a simple data representation of data publicly available from <a href="https://coronavirus.data.gov.uk/">PHE</a>. I am aware the size of each circle is a function of many things (e.g. testing capacity, population, etc) - I currently have no intention of delving into these problems to model them out. Stay safe!</p>
             <!-- <hr /> -->
             <label id="date"></label>
-            <input id="slider" type="range" min="0" max="222" step="1" value="0" />
-            <button type="button" id="start">start</button>
-            <button type="button" id="stop">stop</button>
+            <input id="slider" type="range" min="0" max="" step="1" value="" />
+            <button id="play-button">Play</button>
+            <div id="div_customContent">
+                <button id="hide" class="close-icon" style="float: right;"></button>
+            </div>
         </div>
     </div>
 
@@ -94,14 +137,14 @@
                     return d;
                 }
             ).then(function (d) {
-                $("#date").html(d[0].substring(0, 10));
-                $("#slider").attr({'max': d.length - 1});
+                $("#date").html(d[d.length - 1].substring(0, 10));
+                $("#slider").attr({
+                    'max': d.length - 1,
+                    'value': d.length - 1,
+                });
                 return d
             });
 
-        //             $( document ).ready(function() {
-        //                 $("#start").click();
-        // });
 
         document
             .getElementById('slider')
@@ -113,25 +156,36 @@
                 render();
             });
 
-        var myTimer;
-        d3.select("#start").on("click", function () {
-            clearInterval(myTimer);
-            myTimer = setInterval(function () {
-                var b = d3.select("#slider");
-                var t = (+b.property("value") + 1) % (+b.property("max") + 1);
-                if (t == 0) {
-                    t = +b.property("min");
-                }
-                b.property("value", t);
-                date.then(function (d) {
-                    return $("#date").html(d[t].substring(0, 10));
-                })
-                render();
-            }, 25);
-        });
 
-        d3.select("#stop").on("click", function () {
-            clearInterval(myTimer);
+        var playButton = d3.select("#play-button");
+
+        var myTimer;
+        playButton.on("click", function () {
+            var button = d3.select(this);
+            if (button.text() != "Pause") {
+                clearInterval(myTimer);
+                myTimer = setInterval(function () {
+                    var b = d3.select("#slider");
+                    var t = (+b.property("value") + 1) % (+b.property("max") + 1);
+                    if (t == 0) {
+                        t = +b.property("min");
+                    }
+                    b.property("value", t);
+                    date.then(function (d) {
+                        return $("#date").html(d[t].substring(0, 10));
+                    })
+                    render();
+                }, 25);
+
+                button.text("Pause");
+            } else {
+                clearInterval(myTimer);
+                button.text("Play");
+            }
+        });
+        $("#div_customContent").hide();
+        $("#hide").click(function () {
+            $("#div_customContent").hide();
         });
 
         mapboxgl.accessToken = "pk.eyJ1IjoicHBwMjUiLCJhIjoiY2tiMHh1dTA1MGNrMDJ2czlsdzltaXFueSJ9.zECHfP2jwsAjO_qNvRSVcg";
@@ -190,6 +244,54 @@
                 .style("opacity", 0.7)
                 .style("fill", "#ff3636");
 
+            svg.selectAll("circle")
+                .data(data)
+                .on("mouseover", function (d) {
+                    $("#div_customContent").show();
+                    var parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+                    date.then((result) => {
+                        d.date = result;
+                    }).then(function () {
+
+                        data_MG = [];
+                        for (i = 0; i < d.data.length; i++) {
+                            data_MG.push({
+                                "date": parseTime(d.date[i]),
+                                "value": d.data[i]
+                            })
+                        }
+                        var dirPolar = {
+                            title: d.name,
+                            data: data_MG,
+                            // width: 600,
+                            // height: 240,
+                            full_width: true,
+                            right: 40,
+                            left: 90,
+                            bottom: 50,
+                            brush: 'x',
+
+                            // x_label: 'males',
+                            y_label: 'Active Cases',
+                            color: "black",
+                            xax_count: 5,
+                            xax_format: d3.timeFormat("%b"),
+                            // point_size: 0,
+
+                            target: "#div_customContent",
+                        }
+                        MG.data_graphic(dirPolar);
+                    })
+
+
+
+
+
+
+                })
+
+
             render();
         }
 
@@ -212,7 +314,7 @@
                     return project([d.lng, d.lat]).y;
                 })
                 .attr("r", function (d) {
-                    return d.data[i] / 10;
+                    return d.data[i] / 20;
                 });
         }
     </script>
