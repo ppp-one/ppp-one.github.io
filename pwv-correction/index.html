@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>A photometric correction for water vapour</title>
+
+    <!-- <meta name="viewport" content="width=device-width, user-scalable=1, initial-scale=1"> -->
+    <meta name="viewport" content="width=1024">
+    <script src="https://kit.fontawesome.com/75a5fedd38.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="icon" type="image/png" href="http://open-seneca.org/ppp25/images/favicon.png">
+    <style>
+        body {
+            background: rgb(18, 20, 24);
+            font-family: "Times New Roman", Arial, sans-serif;
+            font-size: 13px;
+            color: #EFEFEF;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+        }
+
+        .row {
+            margin-bottom: 50px;
+            display: flex;
+            /* align-items: center; */
+            /* justify-content: center; */
+        }
+
+
+        p {
+            font-size: 16px;
+            color: #EFEFEF;
+        }
+
+        .figure-caption {
+            color: #EFEFEF;
+            font-size: 14px;
+        }
+
+        .container {
+            height: 100%;
+            margin: 0 auto;
+            /* max-width: 900px; */
+            position: relative;
+            width: 100%;
+        }
+
+        #content-wrapper {
+            height: 100%;
+            min-height: 500px;
+            width: 100%;
+        }
+
+        .scroll-magic-section {
+            height: 100%;
+        }
+
+        #pin {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        #wipe {
+            height: 100%;
+            /* overflow: hidden; */
+            overflow-y: scroll;
+            position: absolute;
+            top: 0;
+            right: 0;
+            -webkit-transform: translateY(100%);
+            transform: translateY(100%);
+            width: 100%;
+            background: #37474F;
+        }
+
+        #second-wipe {
+            height: 100%;
+            /* overflow: hidden; */
+            overflow-y: scroll;
+            position: absolute;
+            top: 0;
+            right: 0;
+            -webkit-transform: translateY(100%);
+            transform: translateY(100%);
+            width: 100%;
+            background: #424242;
+        }
+
+        #third-wipe {
+            height: 100%;
+            /* overflow: hidden; */
+            overflow-y: scroll;
+            position: absolute;
+            top: 0;
+            right: 0;
+            -webkit-transform: translateY(100%);
+            transform: translateY(100%);
+            width: 100%;
+            background: #4E342E;
+        }
+
+        #slide {
+            height: 100%;
+            overflow-y: scroll;
+            position: absolute;
+            top: 0;
+            left: 0;
+            -webkit-transform: translateX(-100%);
+            transform: translateX(-100%);
+            width: 100%;
+            background: rgb(129, 111, 87);
+        }
+
+        #forth-wipe {
+            height: 100%;
+            /* overflow: hidden; */
+            overflow-y: scroll;
+            position: absolute;
+            top: 0;
+            right: 0;
+            -webkit-transform: translateY(100%);
+            transform: translateY(100%);
+            width: 100%;
+            background: #000;
+        }
+
+        h6 {
+            opacity: .3;
+        }
+
+        h6 a {
+            color: #fff;
+        }
+
+        h6 a:hover {
+            color: #fff;
+        }
+
+        .cloud {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 100%;
+            background: #add8e6;
+            box-shadow:
+                #add8e6 -45px 15px 0 10px,
+                #add8e6 0px 15px 0 10px,
+                #add8e6 40px 15px 0 8px,
+                #add8e6 -20px -10px 0 5px,
+                #add8e6 25px -8px 0 5px,
+                #add8e6 5px -20px 0 0px;
+        }
+
+        @keyframes glide {
+            100% {
+                transform: translateX(2800px) scale(1.2);
+            }
+        }
+
+        #video-background {
+            /*  making the video fullscreen  */
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 0%;
+            left: 0%;
+            /* transform: translateX(-50%)    translateY(-50%); */
+        }
+
+
+        ul {
+            list-style-type: none;
+            padding: 0px;
+        }
+
+        ul li {
+            font-size: 16px;
+            padding: 20px 0px;
+
+        }
+
+        ul li:before {
+            font-family: 'FontAwesome';
+            content: '\f043';
+            margin: 0 20px 0 0px;
+            color: #1ca3ec;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .example::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .example {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="content-wrapper">
+
+        <section id="pin" class="scroll-magic-section">
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="cloud"></div>
+            <div class="container">
+                <div class="row h-50 d-flex">
+                    <div class="col-md-12 mt-auto">
+                        <h1>A photometric correction for water vapour</h1>
+                        <br>
+                        <br>
+                        <h6><a href="https://twitter.com/Peterpihlmann">Peter Pihlmann Pedersen</a>, <a href="https://twitter.com/murraycatriona4">Catriona Murray</a>, <a href="https://twitter.com/DidierQueloz">Didier Queloz</a>, and the remaining <a href="https://www.speculoos.uliege.be/cms/c_4549250/en/speculoos-team">SPECULOOS team</a></h6>
+                        <h6><a href="https://twitter.com/CamExoplanets">University of Cambridge, Cavendish Laboratory</a></h6>
+
+                    </div>
+                </div>
+                <div class="row d-flex" style="margin-top: 150px;">
+                    <div class="col-md-1">
+                        <h6 style="opacity:1;">Abstract: </h6>
+                    </div>
+                    <div class="col-md-8 mt-auto">
+                        <h6>
+                            We have developed a first principles method of modelling and mitigating the photometric effects of rapidly changing precipitable water vapour (PWV) on time-series photometric data.
+                        </h6>
+                        <h6>
+                            It's been applied to ground-based observations made by <a href="http://speculoos.earth">SPECULOOS</a>-Southern Observatory (SSO), four 1&nbsp;m-class robotic telescopes searching for transiting terrestrial planets around the nearest and brightest ultra-cool dwarfs (UCDs).
+                        </h6>
+                        <h6>
+                            A study on 104 targets, spanning a period of 1 year, saw a median improvement on global light curves' RMS, at 30-minute binning, of 64&nbsp;% after applying the correction method.
+                        </h6>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wipe" class="example">
+                <div class="container d-flex h-100">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 my-auto">
+                            <ul>
+                                <li>Precipitable Water Vapour (PWV) in our atmosphere absorbs light as a function of wavelength.</li>
+                                <li>This leads to a differential effect on the observed flux, \(f(t)\), between stars of different \(\text{T}_\text{eff}\).</li>
+                                <li>PWV variability can be mistaken for target variability, or even a transiting planet (Murray et al. 2020; Pedersen et al. in prep.).</li>
+                                <li>Figure&nbsp;1 illustrates the effect PWV has on observed flux as a function of wavelength,</li>
+                                <li>with Equation&nbsp;1 describing the nature of observed flux as a function of atmospheric and instrumental parameters.</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8 my-auto">
+                            <figure class="figure">
+                                <img src="https://www.open-seneca.org/ppp25/images/fig1.jpg" class="figure-img img-fluid rounded" alt="">
+                                <figcaption class="figure-caption"><b>Figure&nbsp;1.</b> The fractional change of atmospheric transmission, at airmass 1, from a PWV of 0.05&nbsp;mm to 20&nbsp;mm is shown via a series of low resolution atmospheric spectra (from the SkyCalc Sky Model Calculator, for 2400&nbsp;m, Jones et al. 2013; Noll et al. 2012). 5000&nbsp;K and 2000&nbsp;K stellar spectra are superimposed, from PHOENIX BT-Settl models (Allard et al. 2012). Four observational passbands, r', i', z', I&nbsp;+&nbsp;z', with instrumental efficiencies of a telescope equipped with a deeply-depleted CCD are also shown.</figcaption>
+                            </figure>
+                            <div class="card" style="margin-bottom: 8px;">
+                                <div class="card-block" style="padding: 10px 30px;">
+                                    <p style="color:#000">
+                                        \(f(t) = \int_0^\infty{W(\lambda, X, PWV, t)~R(\lambda)~S(\lambda, \text{T}_\text{eff}, \text{logg}, \text{[Fe/H]}, t) ~ d\lambda} \) <span style="float: right;">(1)</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <figcaption class="figure-caption">
+                                \(W(\lambda,X,PWV,t)\) is the atmospheric transmission as function of wavelength, \(\lambda\), airmass, \(X\), and \(PWV\) value with time, \(t\). <br>
+
+                                \(R(\lambda)\), is the overall instrument response (including the filter, camera, and telescope efficiency), as a function of wavelength. <br>
+
+                                \(S(\lambda, \text{T}_\text{eff}, \text{logg}, \text{[Fe/H]},t)\) is the flux density distribution of an observed star as a function of wavelength, effective temperature, \(\text{T}_\text{eff}\), surface gravity, \(\text{logg}\), metallicity, \(\text{[Fe/H]}\), and time.
+                            </figcaption>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="second-wipe" class="example">
+                <div class="container d-flex h-100">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 my-auto">
+                            <ul>
+                                <li>The differential change in flux different filters experience, following Equation&nbsp;1, is illustrated in Figure&nbsp;2.</li>
+                                <li>Radiometers can accurately quantify the level of PWV in the atmosphere.</li>
+                                <li>Paranal, Chile, where SPECULOOS-Southern Observatory (SSO) is located, has a radiometer on the VLT platform (LHATPRO; Kerber et al. 2012), with an accuracy of &#177;&nbsp;0.1&nbsp;mm.</li>
+                                <li>A histogram, in Figure&nbsp;3, illustrates the distribution of PWV at zenith.</li>
+                                <li>During observation hours, PWV zenith values follow a log-logistic distribution with a median value of 2.4&nbsp;mm.</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8 my-auto">
+                            <figure class="figure">
+                                <img src="https://www.open-seneca.org/ppp25/images/fig2.jpg" class="figure-img img-fluid rounded" alt="">
+                                <figcaption class="figure-caption"><b>Figure&nbsp;2.</b> The change in flux as a function of PWV for different temperature stars as modelled through four observational passbands, r', i', z', and I&nbsp;+&nbsp;z' (profiles shown in Figure 1), with respect to a 0.05&nbsp;mm PWV atmosphere at airmass 1. For example, for an I&nbsp;+&nbsp;z' passband, a 2500&nbsp;K target star will experience a 9&nbsp;% flux drop for a PWV change from 0.05&nbsp;mm to 10&nbsp;mm, whereas 5000&nbsp;K comparison stars (the difference is minimal between hotter stars) will instead experience a 5–6&nbsp;% decrease.</figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="https://www.open-seneca.org/ppp25/images/fig3.jpg" class="figure-img img-fluid rounded" alt="">
+                                <figcaption class="figure-caption"><b>Figure&nbsp;3.</b> Histogram of observed PWV at zenith from dawn to dusk over a 1 year period (2019-02-17 to 2020-01-31) with the LHATPRO instrument located on the VLT platform in Paranal, Chile.</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="third-wipe" class="example">
+                <div class="container d-flex h-100">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 my-auto">
+                            <ul>
+                                <li>Differential photometry is applied for ground-based photometry.</li>
+                                <li>As per Equation 1, accurate \(\text{T}_\text{eff}\) values are necessary to know for the correction.</li>
+                                <li>We use estimated \(\text{T}_\text{eff}\) values. Gaia \(\text{T}_\text{eff}\) for the comparison stars, and Filippazzo et al. 2015 derived values for our target stars.</li>
+                                <li>Application of the correction, with differential photometry, is shown in Figure 4 and 5.</li>
+                                <li>Inaccurate \(\text{T}_\text{eff}\) values, and lack of line of sight values from the radiometer, lead to small discrepancies in the correction.</li>
+                                <li>As in Berta et al. 2012, it possible to use many co-current observations to mitigate for large PWV changes. But high risk of introducing false structure.</li>
+                                <li>We require sub-mm PWV accuracy to remove transit like events.</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8 my-auto">
+                            <figure class="figure">
+                                <img src="https://www.open-seneca.org/ppp25/images/fig4.jpg" class="figure-img img-fluid rounded" alt="">
+                                <figcaption class="figure-caption"><b>Figure&nbsp;4.</b> Example set of global light curves, of different targets, across 50 consecutive nights from the four SSO telescopes, all observed with the I&nbsp;+&nbsp;z' filter. In black, 30 minute binned points from the SSO pipeline (Murray et al. 2020), not including the PWV correction. In blue, the expected change of flux due to the time varying PWV in our atmosphere, using LHATPRO measurements.</figcaption>
+                            </figure>
+
+                            <figure class="figure">
+                                <img src="https://www.open-seneca.org/ppp25/images/fig4b.jpg" class="figure-img img-fluid rounded" alt="">
+                                <figcaption class="figure-caption"><b>Figure&nbsp;5.</b> Final PWV corrected light curves from Figure 4.</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="slide" class="example">
+                <div class="container d-flex h-100">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 my-auto">
+                            <ul>
+                                <li>To quantify the level of improvement, the RMS of 104 global and nightly light curves at 30 minute binning were evaluated.</li>
+                                <li>We saw a median improvement of 64&nbsp;% on global light curves, and 5&nbsp;% on nightly light curves.</li>
+                                <li>Correction done independently of light curve structures, using first principles. Further work to be included in Pedersen et al. in prep.</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8 my-auto">
+                            <figure class="figure">
+                                <img src="https://www.open-seneca.org/ppp25/images/fig5.jpg" class="figure-img img-fluid rounded" alt="" width=90%>
+                                <figcaption class="figure-caption"><b>Figure&nbsp;6.</b> The RMS from global light curves of 104 targets spanning a 1 year period (2019-02-17 to 2020-01-31) were evaluated at 30 minute binning. Top: Histogram of RMS ratio per target from the SSO pipeline, with and without correction. Bottom: Same as top, but evaluated on a nightly scale (i.e. majority of global structure removed). Boxplot accompanies each histogram with the orange line representing the mean of each distribution. Correction done with zenith PWV values from the LHATPRO.</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="forth-wipe" class="example">
+                <video autoplay loop id="video-background" muted plays-inline>
+                    <source src="https://cdn.eso.org/videos/hd_and_apple/eso1839b.m4v" type="video/mp4">
+                </video>
+                <div class="container d-flex h-100">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 my-auto">
+                            &nbsp;
+                        </div>
+                        <div class="col-md-8 my-auto" style="background-color: rgba(0,0,0,0.3); border-radius: 5px;">
+                            <br>
+                            <h5>
+                                Contact:
+                            </h5>
+                            <p>
+                                <a href="mailto:ppp25@cam.ac.uk" style="color: white">ppp25@cam.ac.uk</a>
+                                <br>
+                                <a href="https://twitter.com/Peterpihlmann" style="color: white">@Peterpihlmann</a>
+                            </p>
+
+                            <br>
+
+                            <h5>
+                                Many thanks to:
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-2 my-auto mx-auto">
+                                    <img src="https://www.open-seneca.org/ppp25/images/sensorCDT.png" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-md-2 my-auto mx-auto">
+                                    <img src="https://www.open-seneca.org/ppp25/images/CU-logo.svg" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-md-2 my-auto mx-auto">
+                                    <img src="https://www.open-seneca.org/ppp25/images/simons-foundation.svg" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-md-2 my-auto mx-auto">
+                                    <img src="https://www.open-seneca.org/ppp25/images/speculoos.png" class="img-fluid" alt="">
+                                </div>
+                                <div class="col-md-2 my-auto mx-auto">
+                                    <img src="https://www.open-seneca.org/ppp25/images/epsrc.svg" class="img-fluid" alt="">
+                                </div>
+                            </div>
+
+                            <h5>
+                                References:
+                            </h5>
+                            <div class="row">
+                                <h6 style="opacity:0.5; font-size:14px">
+                                    <ol>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.495.2446M/abstract">Murray, C. A., Delrez, L., Pedersen, P. P., et al. 2020, MNRAS, 495, 2446</a></li>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2013A%26A...560A..91J/abstract">Jones A., Noll S., Kausch W., Szyszka C., Kimeswenger S., 2013, A&A, 560, A91</a></li>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2012A%26A...543A..92N/abstract">Noll S., Kausch W., Barden M., Jones A. M., Szyszka C., Kimeswenger S., Vinther J., 2012, A&A, 543, A92</a></li>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2012RSPTA.370.2765A/abstract">Allard, F., Homeier, D., & Freytag, B. 2012, Philos. Trans. A. Math. Phys. Eng. Sci., 370, 2765</a></li>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2012SPIE.8446E..3NK/abstract">Kerber F., et al., 2012, in McLean I. S., Ramsay S. K., Takami H., eds, Proc. SPIE Vol. 8446, Ground-based and Airborne Instrumentation for Astronomy IV. p. 84463N</a></li>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2015ApJ...810..158F/abstract">Filippazzo J. C., Rice E. L., Faherty J., Cruz K. L., Van Gordon M. M., Looper D. L., 2015, ApJ, 810, 158</a></li>
+                                        <li><a href="https://ui.adsabs.harvard.edu/abs/2012AJ....144..145B/abstract">Berta Z. K., Irwin J., Charbonneau D., Burke C. J., Falco E. E., 2012, AJ, 144, 145</a></li>
+                                    </ol>
+                                </h6>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/animation.gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML"></script>
+
+    <script>
+
+        
+        $(document).ready(function () {
+            $('.cloud').each(function () {
+                var width = $(window).width();
+                var height = $(window).height();
+                var top = Math.floor(Math.random() * height);
+                var time = Math.floor(Math.random() * 60) + 30;
+                var size = (Math.floor(Math.random() * 250) + 50) / 100;
+                var left = -Math.floor(Math.random() * (width / 2)) - 80 * size;
+                var opacity = Math.random() * 0.2 + 0.1;
+                $(this).css({
+                    'top': top + 'px',
+                    'left': left + 'px',
+                    '-webkit-animation': 'glide ' + time + 's ease-in-out infinite alternate',
+                    'transform': 'scale(' + size + ')',
+                    'animation-delay': '10s',
+                    'opacity': opacity
+                });
+            });
+        });
+
+        window.MathJax = {
+            tex: {
+                tags: 'ams'
+            }
+        };
+
+        var controller = new ScrollMagic.Controller({
+            globalSceneOptions: {
+                triggerHook: "onLeave"
+            }
+        });
+
+        var pinani = new TimelineMax()
+            .add(gsap.to("#wipe", 1, {
+                transform: "translateY(0)"
+            }))
+            .add(gsap.to("#second-wipe", 1, {
+                transform: "translateY(0)"
+            }))
+            .add(gsap.to("#third-wipe", 1, {
+                transform: "translateY(0)"
+            }))
+            .add(gsap.to("#slide", 1, {
+                transform: "translateX(0)"
+            }))
+            .add(gsap.to("#forth-wipe", 1, {
+                transform: "translateY(0)"
+            }));
+        // .add(gsap.from("#unpin", .5, {
+        //     top: "100%"
+        // }));
+
+        new ScrollMagic.Scene({
+                triggerElement: "section#pin",
+                duration: '100%'
+            })
+            .setTween(pinani)
+            .setPin("section#pin")
+            .addTo(controller);
+    </script>
+
+
+</body>
+
+</html>
